@@ -7,4 +7,5 @@ export default interface IScene {
 
     add(id: string, gameObject: IGameObject): void;
     get(id: string): IGameObject | Array<IGameObject>;
+    compile(): void;
 }

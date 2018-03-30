@@ -5,6 +5,7 @@ export default class GameObjectManager {
 
     GameObjects: IHashMap<IGameObject>;
     GameObjectClasses: IHashMap<Array<IGameObject>>;
+
     constructor() {
         this.GameObjects = {};
         this.GameObjectClasses = {};
@@ -40,5 +41,25 @@ export default class GameObjectManager {
                 return this.GameObjects[id];
             }
         }
+    }
+
+    unpackGameObjects(): Array<IGameObject> {
+        let gameObjects: Array<IGameObject> = [];
+
+        for (let index in this.GameObjects) {
+            if (this.GameObjects[index] !== null) {
+                gameObjects.push(this.GameObjects[index]);
+            }
+        }
+
+        for (let index in this.GameObjectClasses) {
+            if (this.GameObjectClasses[index] !== null) {
+                for (let i = 0; i < this.GameObjectClasses[index].length; i++) {
+                    gameObjects.push(this.GameObjectClasses[index][i]);
+                }
+            }
+        }
+
+        return gameObjects;
     }
 }
