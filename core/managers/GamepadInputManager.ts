@@ -31,6 +31,7 @@ export default class GamepadInputManager {
 
     addgamepad(e: GamepadEvent) {
         this.Gamepads[e.gamepad.index] = new GamepadInput(e.gamepad);
+        Logger.log('player ' + e.gamepad.index, 'connected');
     }
 
     removegamepad(e: GamepadEvent) {

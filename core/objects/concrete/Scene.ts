@@ -32,4 +32,8 @@ export default class Scene implements IScene {
             }
         }
     }
+
+    update(): void {
+        this.GameObjectManager.update();
+    }
 }

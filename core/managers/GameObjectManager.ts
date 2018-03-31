@@ -62,4 +62,11 @@ export default class GameObjectManager {
 
         return gameObjects;
     }
+
+    update(): void {
+        let gameObjects = this.unpackGameObjects();
+        for (let i = 0; i < gameObjects.length; i++) {
+            gameObjects[i].update();
+        }
+    }
 }

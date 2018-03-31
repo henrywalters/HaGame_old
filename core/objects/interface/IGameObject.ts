@@ -1,22 +1,33 @@
-import { ComponentType } from '../concrete/GameObject';
+import { ComponentType, CollisionType } from '../concrete/GameObject';
 import IHashMap from './../../../common/dataStructures/IHashMap';
 import IGeometry from '../../../components/interface/IGeometry';
 import IMesh from '../../../components/interface/IMesh';
 import IScript from '../../../components/interface/IScript';
 import IMaterial from '../../../components/interface/IMaterial';
 import * as Three from 'three';
+import IPhysics from '../../../components/interface/IPhysics';
 
 export default interface IGameObject {
+
+    BoundBox: Three.Box3;
+    BoundSphere: Three.Sphere;
+    CollisionType: CollisionType;
+    CollisionDetectionActive: boolean;
 
     Geometry: IGeometry | null;
     Mesh: IMesh | null;
     Material: IMaterial | null;
     Scripts: Array<IScript>;
+    Physics: Array<IPhysics>;
 
     Parent: IGameObject | null;
     Children: IHashMap<IGameObject>;
 
     RenderObject: Three.Mesh | null;
+    
+    Width: number;
+    Depth: number;
+    Height: number;
 
     X: number;
     Y: number;
@@ -40,5 +51,7 @@ export default interface IGameObject {
     position(x: number, y: number, z: number): void;
     rotate(roll: number, pitch: number, yaw: number): void;
     scale(x: number, y: number, z: number): void;
+
+    update(): void;
 
 }

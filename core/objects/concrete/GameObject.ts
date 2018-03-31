@@ -1,3 +1,4 @@
+import IPhysics from '../../../components/interface/IPhysics';
 import IGameObject from '../interface/IGameObject';
 import IGeometry from '../../../components/interface/IGeometry';
 import IMesh from '../../../components/interface/IMesh';
@@ -10,26 +11,31 @@ export enum ComponentType {
     'Geometry',
     'Mesh',
     'Script',
-    'Material'
+    'Material',
+    'Physics'
 }
 
-export function isGeometry(component: IGeometry | IMesh | IScript | IMaterial): component is IGeometry {
+export function isGeometry(component: IGeometry | IMesh | IScript | IMaterial | IPhysics): component is IGeometry {
     return <IGeometry> component !== undefined;
 }
 
-export function isMesh(component: IGeometry | IMesh | IScript | IMaterial): component is IMesh {
+export function isMesh(component: IGeometry | IMesh | IScript | IMaterial | IPhysics): component is IMesh {
     return <IMesh> component !== undefined;
 }
 
-export function isScript(component: IGeometry | IMesh | IScript | IMaterial): component is IScript {
+export function isScript(component: IGeometry | IMesh | IScript | IMaterial | IPhysics): component is IScript {
     return <IScript> component !== undefined;
 }
 
-export function isMaterial(component: IGeometry | IMesh | IScript | IMaterial): component is IMaterial {
+export function isMaterial(component: IGeometry | IMesh | IScript | IMaterial | IPhysics): component is IMaterial {
     return <IMaterial> component !== undefined;
 }
 
-export function componentType(component: IGeometry | IMesh | IScript | IMaterial): ComponentType {
+export function isPhysics(component: IGeometry | IMesh | IScript | IMaterial | IPhysics): component is IPhysics {
+    return <IPhysics> component !== undefined;
+}
+
+export function componentType(component: IGeometry | IMesh | IScript | IMaterial | IPhysics): ComponentType {
     if (isGeometry(component)) {
         return ComponentType.Geometry;
     } else if (isMesh(component)) {
@@ -38,22 +44,39 @@ export function componentType(component: IGeometry | IMesh | IScript | IMaterial
         return ComponentType.Script;
     } else if (isMaterial(component)) {
         return ComponentType.Material;
+    } else if (isPhysics(component)) {
+        return ComponentType.Physics;
     } else {
         throw new Error('component type could not be determined');
     }
 }
 
+export enum CollisionType {
+    'Box',
+    'Sphere'
+}
+
 export default class GameObject implements IGameObject {
 
+    BoundBox: Three.Box3;
+    BoundSphere: Three.Sphere;
+    CollisionType: CollisionType;
+    CollisionDetectionActive: boolean;
+    
     Geometry: IGeometry | null;
     Mesh: IMesh | null;
     Scripts: Array<IScript>;
     Material: IMaterial | null;
+    Physics: Array<IPhysics>;
 
     RenderObject: Three.Mesh | null;
 
     Parent: IGameObject | null;
     Children: IHashMap<IGameObject>;
+
+    Width: number;
+    Depth: number;
+    Height: number;
 
     X: number;
     Y: number;
@@ -68,10 +91,16 @@ export default class GameObject implements IGameObject {
     Yaw: number;
 
     constructor() {
+        this.BoundBox = new Three.Box3(new Three.Vector3(), new Three.Vector3());
+        this.BoundSphere = new Three.Sphere();
+        this.CollisionDetectionActive = true;
+        this.CollisionType = CollisionType.Box;
+
         this.Geometry = null;
         this.Mesh = null;
         this.Material = null;
         this.Scripts = [];
+        this.Physics = [];
         this.Parent = null;
         this.RenderObject = null;
         this.Children = {};
@@ -87,6 +116,10 @@ export default class GameObject implements IGameObject {
         this.Roll = 0;
         this.Pitch = 0;
         this.Yaw = 0;
+        
+        this.Height = 0;
+        this.Width = 0;
+        this.Depth = 0;
     }
 
     addChild(id: string, gameObject: IGameObject): void {
@@ -101,15 +134,22 @@ export default class GameObject implements IGameObject {
         }
     }
 
-    addComponent(type: ComponentType, component: IGeometry | IMesh | IScript | IMaterial): void {
+    addComponent(type: ComponentType, component: IGeometry | IMesh | IScript | IMaterial | IPhysics): void {
         if (type === ComponentType.Geometry) {
             this.Geometry = <IGeometry> component;
+            let geo = this.Geometry.getGeometry();
+            this.Width = geo.scale[0];
+            this.Height = geo.scale[1];
+            this.Depth = geo.scale[2];
         } else if (type === ComponentType.Mesh) {
             this.Mesh = <IMesh> component;
         } else if (type === ComponentType.Script) {
             this.Scripts.push(<IScript> component);
         } else if (type === ComponentType.Material) {
             this.Material = <IMaterial> component;
+        } else if (type === ComponentType.Physics) {
+            this.Physics.push(<IPhysics> component);
+            this.Physics[this.Physics.length - 1].setBody(this);
         }
 
         // If its possible, create the render object automatically
@@ -120,6 +160,12 @@ export default class GameObject implements IGameObject {
                 this.RenderObject = new Three.Mesh(geometry, material);
                 // this.updateGameObject();
             }
+        }
+    }
+
+    update(): void {
+        for (let i = 0; i < this.Physics.length; i++) {
+            this.Physics[i].applyPhysics();
         }
     }
 
@@ -136,6 +182,21 @@ export default class GameObject implements IGameObject {
             throw new Error('Can not get render object, check canRender');
         } else {
             return this.RenderObject;
+        }
+    }
+
+    computeBoundBox(): void {
+        if (this.RenderObject !== null) {
+            this.BoundBox.setFromObject(this.RenderObject);
+        }
+    }
+
+    computeBoundSphere(): void {
+        if (this.RenderObject !== null) {
+            this.BoundSphere = new Three.Sphere(
+                this.RenderObject.position, 
+                this.RenderObject.geometry.boundingSphere.radius
+            );
         }
     }
 
@@ -159,6 +220,9 @@ export default class GameObject implements IGameObject {
         this.ScaleX = x;
         this.ScaleY = y;
         this.ScaleZ = z;
+        this.Width *= this.ScaleX;
+        this.Height *= this.ScaleY;
+        this.Depth *= this.ScaleZ;
 
         this.updateGameObject();
     }

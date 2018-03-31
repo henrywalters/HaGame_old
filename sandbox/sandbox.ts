@@ -4,11 +4,14 @@ import SceneManager from '../core/managers/SceneManager';
 import Logger from './../common/utils/Logger';
 import Scene from '../core/objects/concrete/Scene';
 import Cube from '../components/concrete/geometries/Cube';
-import BasicMaterial from '../components/concrete/materials/BasicMaterial';
+// import BasicMaterial from '../components/concrete/materials/BasicMaterial';
 import PerspectiveCamera from '../core/objects/concrete/Camera';
 import { ComponentType } from '../core/objects/concrete/GameObject';
 import GamepadInputManager from '../core/managers/GamepadInputManager';
 // import GamepadInput from '../core/objects/concrete/GamepadInput';
+import * as Three from 'three';
+import LambertMaterial from '../components/concrete/materials/LambertMaterial';
+// import Rigidbody from '../components/concrete/physics/Rigidbody';
 
 function random(min: number, max: number): number {
     return Math.random() * (max - min + 1) + min;
@@ -35,16 +38,18 @@ export default class Sandbox {
         scene.add('player', player);
         scene.add('floor', floor);
 
-        floor.addComponent(ComponentType.Geometry, new Cube(10, .1, 4));
-        floor.addComponent(ComponentType.Material, new BasicMaterial({ color: 0x4a4e54 }));
+        floor.addComponent(ComponentType.Geometry, new Cube(20, .3, 70));
+        floor.addComponent(ComponentType.Material, new LambertMaterial({ color: 0x4a4e54 }));
 
-        player.addComponent(ComponentType.Geometry, new Cube(1, 1, 1));
-        player.addComponent(ComponentType.Material, new BasicMaterial({ color: 'blue' }));
+        player.addComponent(ComponentType.Geometry, new Cube(1, 1.5, 1));
+        player.addComponent(ComponentType.Material, new LambertMaterial({ color: 0x0b1c72 }));
+        // player.addComponent(ComponentType.Physics, new Rigidbody());
 
         let camera = new PerspectiveCamera(75, width / height, .1, 1000);
 
-        camera.position(7.5, 7.5, 15);
+        camera.position(0, 5, 5);
 
+        camera.WebGLCamera.lookAt(new Three.Vector3(player.X, player.Y, player.Z));
         let renderer = new Renderer('game', width, height);
 
         scene.WebGLScene.add(player.getRenderObject());
@@ -52,10 +57,31 @@ export default class Sandbox {
         floor.position(0, 0, 0);
 
         scene.compile();
+
+        for (let i = 0; i < 7; i++) {
+            let p = new Three.PointLight(0xffffff, .8, 15);
+            p.position.set(0, 5, i * 10);
+            p.lookAt(new Three.Vector3(0, 0, i));
+            scene.WebGLScene.add(p);
+        }
+
+        scene.WebGLScene.add(new Three.AmbientLight(0xffffff));
+        // scene.WebGLScene.add(light);
+
+        inputs.showDevices();
         
         random(0, 1);
         let animate = function() {
             inputs.update();
+            scene.update();
+            if (inputs.player(0) !== undefined) {
+                player.move(inputs.player(0).LeftAxis.X / 10, 0, 0);
+                player.move(0, 0, inputs.player(0).LeftAxis.Y / 10);
+                // light.position.set(player.X, player.Y, player.Z - .5);
+                // light.lookAt(scene.WebGLScene.position);
+                // light.setRotationFromAxisAngle(new Three.Vector3(player.X, player.Y, player.Z), 40);
+            }
+            camera.position(player.X, player.Y + 5, player.Z + 5);
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
             
