@@ -2,17 +2,18 @@ import GameObjectManager from './../../managers/GameObjectManager';
 import * as Three from 'three';
 import IGameObject from '../interface/IGameObject';
 import IScene from '../interface/IScene';
-import Logger from '../../../common/utils/Logger';
 
 export default class Scene implements IScene {
     
     GameObjectManager: GameObjectManager;
     WebGLScene: Three.Scene;
 
-    constructor() {
+    constructor(showAxis: boolean = false) {
         this.GameObjectManager = new GameObjectManager();
         this.WebGLScene = new Three.Scene();
-        this.WebGLScene.add(new Three.AxisHelper(20));
+        if (showAxis) {
+            this.WebGLScene.add(new Three.AxisHelper(20));
+        }
     }
 
     add(id: string, gameObject: IGameObject): void {
@@ -27,7 +28,6 @@ export default class Scene implements IScene {
         let gameObjects = this.GameObjectManager.unpackGameObjects();
         for (let i = 0; i < gameObjects.length; i++) {
             if (gameObjects[i].canRender()) {
-                Logger.log('scene', 'loaded game object');
                 this.WebGLScene.add(gameObjects[i].getRenderObject());
             }
         }

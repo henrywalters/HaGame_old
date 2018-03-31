@@ -29,7 +29,6 @@ export default class Renderer implements IRenderer {
             throw new Error('Container not defined');
         } else {
             this.Container.appendChild(this.WebGLRenderer.domElement);
-            this.WebGLRenderer.setClearColor(0xEEEEEE, 1);
         }
     }
 

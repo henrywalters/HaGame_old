@@ -5,7 +5,6 @@ import IScript from '../../../components/interface/IScript';
 import IHashMap from '../../../common/dataStructures/IHashMap';
 import IMaterial from '../../../components/interface/IMaterial';
 import * as Three from 'three';
-import Logger from '../../../common/utils/Logger';
 
 export enum ComponentType {
     'Geometry',
@@ -115,7 +114,6 @@ export default class GameObject implements IGameObject {
 
         // If its possible, create the render object automatically
         if (this.RenderObject === null) {
-            Logger.log('render object', 'null');
             if (this.Material !== null && this.Geometry !== null) {
                 let material = this.Material.getMaterial();
                 let geometry = this.Geometry.getGeometry();
