@@ -1,4 +1,4 @@
-import { ComponentType, CollisionType } from '../concrete/GameObject';
+import { CollisionType, ComponentType, IDirection } from '../concrete/GameObject';
 import IHashMap from './../../../common/dataStructures/IHashMap';
 import IGeometry from '../../../components/interface/IGeometry';
 import IMesh from '../../../components/interface/IMesh';
@@ -13,6 +13,9 @@ export default interface IGameObject {
     BoundSphere: Three.Sphere;
     CollisionType: CollisionType;
     CollisionDetectionActive: boolean;
+    CollidingDirection: IDirection;
+
+    CanCollide: boolean;
 
     Geometry: IGeometry | null;
     Mesh: IMesh | null;
@@ -32,6 +35,10 @@ export default interface IGameObject {
     X: number;
     Y: number;
     Z: number;
+
+    VelX: number;
+    VelY: number;
+    VelZ: number;
 
     ScaleX: number;
     ScaleY: number;
@@ -53,5 +60,6 @@ export default interface IGameObject {
     scale(x: number, y: number, z: number): void;
 
     update(): void;
+    detectCollisions(gameObjects: Array<IGameObject>): void;
 
 }

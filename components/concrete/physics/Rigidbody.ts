@@ -37,9 +37,12 @@ export default class Rigidbody implements IPhysics {
     }
 
     applyPhysics(): void {
-        this.Velocity += this.Gravity;
         let g = this.gameObject();
-        g.move(0, -1 * this.Velocity, 0);
+        if (!g.CollidingDirection.down) {
+            g.VelY -= this.Gravity;
+        } else {
+            g.VelY = 0;
+        }
     }
 
     setBody(gameObject: IGameObject): void {

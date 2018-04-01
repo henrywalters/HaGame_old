@@ -1,14 +1,21 @@
 import IHashMap from '../../common/dataStructures/IHashMap';
 import IGameObject from '../objects/interface/IGameObject';
+import Logger from '../../common/utils/Logger';
 
 export default class GameObjectManager {
 
     GameObjects: IHashMap<IGameObject>;
     GameObjectClasses: IHashMap<Array<IGameObject>>;
+    MovingObjects: Array<IGameObject>;
+    AllObjects: Array<IGameObject>;
 
     constructor() {
         this.GameObjects = {};
         this.GameObjectClasses = {};
+        this.MovingObjects = [];
+        this.AllObjects = [];
+
+        window.setInterval(() => { this.detectMovingObjects(); }, 100);
     }
 
     add(id: string, gameObject: IGameObject): void {
@@ -59,14 +66,32 @@ export default class GameObjectManager {
                 }
             }
         }
-
+        this.AllObjects = gameObjects;
         return gameObjects;
     }
 
+    detectMovingObjects(): void {
+        this.MovingObjects = [];
+        Logger.log('objects', this.AllObjects.length);
+        
+        for (let i = 0; i < this.AllObjects.length; i++) {
+            if (this.AllObjects[i].VelX !== 0 || this.AllObjects[i].VelY !== 0 || this.AllObjects[i].VelY !== 0) {
+                this.MovingObjects.push(this.AllObjects[i]);
+            }
+        }
+
+        Logger.log('moving', this.MovingObjects.length);
+    }
+
     update(): void {
-        let gameObjects = this.unpackGameObjects();
+        let gameObjects = this.MovingObjects;
+
         for (let i = 0; i < gameObjects.length; i++) {
-            gameObjects[i].update();
+            gameObjects[i].detectCollisions(this.AllObjects);
+        }
+
+        for (let i = 0; i < this.AllObjects.length; i++) {
+            this.AllObjects[i].update();
         }
     }
 }

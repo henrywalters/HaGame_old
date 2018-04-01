@@ -1,3 +1,4 @@
+import { IDirection } from './GameObject';
 import IPhysics from '../../../components/interface/IPhysics';
 import IGameObject from '../interface/IGameObject';
 import IGeometry from '../../../components/interface/IGeometry';
@@ -6,6 +7,7 @@ import IScript from '../../../components/interface/IScript';
 import IHashMap from '../../../common/dataStructures/IHashMap';
 import IMaterial from '../../../components/interface/IMaterial';
 import * as Three from 'three';
+import CollisionDetector from '../../../common/algorithms/CollisionDetector';
 
 export enum ComponentType {
     'Geometry',
@@ -56,12 +58,23 @@ export enum CollisionType {
     'Sphere'
 }
 
+export interface IDirection {
+    front: boolean;
+    back: boolean;
+    left: boolean;
+    right: boolean;
+    up: boolean;
+    down: boolean;
+}
+
 export default class GameObject implements IGameObject {
 
     BoundBox: Three.Box3;
     BoundSphere: Three.Sphere;
     CollisionType: CollisionType;
     CollisionDetectionActive: boolean;
+    CanCollide: boolean;
+    CollidingDirection: IDirection;
     
     Geometry: IGeometry | null;
     Mesh: IMesh | null;
@@ -82,6 +95,10 @@ export default class GameObject implements IGameObject {
     Y: number;
     Z: number;
 
+    VelX: number;
+    VelY: number;
+    VelZ: number;
+
     ScaleX: number;
     ScaleY: number;
     ScaleZ: number;
@@ -93,8 +110,17 @@ export default class GameObject implements IGameObject {
     constructor() {
         this.BoundBox = new Three.Box3(new Three.Vector3(), new Three.Vector3());
         this.BoundSphere = new Three.Sphere();
-        this.CollisionDetectionActive = true;
+        this.CollisionDetectionActive = false;
         this.CollisionType = CollisionType.Box;
+        this.CanCollide = false;
+        this.CollidingDirection = {
+            up: false,
+            down: false,
+            front: false,
+            back: false,
+            left: false,
+            right: false
+        };
 
         this.Geometry = null;
         this.Mesh = null;
@@ -120,6 +146,10 @@ export default class GameObject implements IGameObject {
         this.Height = 0;
         this.Width = 0;
         this.Depth = 0;
+
+        this.VelX = 0;
+        this.VelY = 0;
+        this.VelZ = 0;
     }
 
     addChild(id: string, gameObject: IGameObject): void {
@@ -158,7 +188,8 @@ export default class GameObject implements IGameObject {
                 let material = this.Material.getMaterial();
                 let geometry = this.Geometry.getGeometry();
                 this.RenderObject = new Three.Mesh(geometry, material);
-                // this.updateGameObject();
+                this.computeBoundBox();
+                this.CanCollide = true;
             }
         }
     }
@@ -166,6 +197,14 @@ export default class GameObject implements IGameObject {
     update(): void {
         for (let i = 0; i < this.Physics.length; i++) {
             this.Physics[i].applyPhysics();
+
+            this.move(this.VelX, this.VelY, this.VelZ);
+        }
+    }
+
+    detectCollisions(gameObjects: Array<IGameObject>): void {
+        if (this.CollisionDetectionActive) {
+            this.CollidingDirection = CollisionDetector.detect(this, gameObjects);
         }
     }
 
