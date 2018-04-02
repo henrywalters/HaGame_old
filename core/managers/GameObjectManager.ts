@@ -1,6 +1,6 @@
 import IHashMap from '../../common/dataStructures/IHashMap';
 import IGameObject from '../objects/interface/IGameObject';
-import Logger from '../../common/utils/Logger';
+// import Logger from '../../common/utils/Logger';
 
 export default class GameObjectManager {
 
@@ -72,7 +72,6 @@ export default class GameObjectManager {
 
     detectMovingObjects(): void {
         this.MovingObjects = [];
-        Logger.log('objects', this.AllObjects.length);
         
         for (let i = 0; i < this.AllObjects.length; i++) {
             if (this.AllObjects[i].VelX !== 0 || this.AllObjects[i].VelY !== 0 || this.AllObjects[i].VelY !== 0) {
@@ -80,18 +79,26 @@ export default class GameObjectManager {
             }
         }
 
-        Logger.log('moving', this.MovingObjects.length);
+        this.MovingObjects = this.AllObjects;
     }
 
     update(): void {
         let gameObjects = this.MovingObjects;
 
+        for (let i = 0; i < this.AllObjects.length; i++) {
+            this.AllObjects[i].update();
+        }
+
         for (let i = 0; i < gameObjects.length; i++) {
             gameObjects[i].detectCollisions(this.AllObjects);
         }
 
-        for (let i = 0; i < this.AllObjects.length; i++) {
-            this.AllObjects[i].update();
-        }
+        for (let i = 0; i < gameObjects.length; i++) {
+            gameObjects[i].move(
+                gameObjects[i].VelX,
+                gameObjects[i].VelY,
+                gameObjects[i].VelZ
+            );
+        }  
     }
 }

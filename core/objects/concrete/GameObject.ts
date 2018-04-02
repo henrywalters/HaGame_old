@@ -69,6 +69,8 @@ export interface IDirection {
 
 export default class GameObject implements IGameObject {
 
+    NextTick: IGameObject;
+
     BoundBox: Three.Box3;
     BoundSphere: Three.Sphere;
     CollisionType: CollisionType;
@@ -197,14 +199,12 @@ export default class GameObject implements IGameObject {
     update(): void {
         for (let i = 0; i < this.Physics.length; i++) {
             this.Physics[i].applyPhysics();
-
-            this.move(this.VelX, this.VelY, this.VelZ);
         }
     }
 
     detectCollisions(gameObjects: Array<IGameObject>): void {
         if (this.CollisionDetectionActive) {
-            this.CollidingDirection = CollisionDetector.detect(this, gameObjects);
+            this.CollidingDirection = CollisionDetector.detect(this, gameObjects).direction;
         }
     }
 
@@ -228,6 +228,17 @@ export default class GameObject implements IGameObject {
         if (this.RenderObject !== null) {
             this.BoundBox.setFromObject(this.RenderObject);
         }
+    }
+
+    ComputeNextBoundBox(): Three.Box3 {
+        var box = new Three.Box3();
+        box.min.x = this.BoundBox.min.x + this.VelX;
+        box.min.y = this.BoundBox.min.y + this.VelY;
+        box.min.z = this.BoundBox.min.z + this.VelZ;
+        box.max.x = this.BoundBox.max.x + this.VelX;
+        box.max.y = this.BoundBox.max.y + this.VelY;
+        box.max.z = this.BoundBox.max.z + this.VelZ;
+        return box;
     }
 
     computeBoundSphere(): void {
@@ -280,6 +291,7 @@ export default class GameObject implements IGameObject {
             this.RenderObject.scale.set(this.ScaleX, this.ScaleY, this.ScaleZ);
             this.RenderObject.rotation.set(this.Roll, this.Pitch, this.Yaw);
             this.computeBoundBox();
+            this.NextTick = this;
             /*this.RenderObject.scale.x = this.ScaleX;
             this.RenderObject.scale.y = this.ScaleY;
             this.RenderObject.scale.z = this.ScaleZ;

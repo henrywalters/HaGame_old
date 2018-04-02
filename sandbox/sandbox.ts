@@ -38,7 +38,38 @@ export default class Sandbox {
         scene.add('player', player);
         scene.add('floor', floor);
 
-        floor.addComponent(ComponentType.Geometry, new Cube(20, .3, 70));
+        let tiles = [];
+        tiles.push(new GameObject());
+        tiles.push(new GameObject());
+        tiles.push(new GameObject());
+        tiles.push(new GameObject());
+        tiles.push(new GameObject());
+
+        tiles[0].addComponent(ComponentType.Geometry, new Cube(.5, 8, 100));
+        tiles[0].addComponent(ComponentType.Material, new LambertMaterial({ color: 0x242628 }));
+        tiles[0].position(-5, 0, 15);
+
+        tiles[1].addComponent(ComponentType.Geometry, new Cube(.5, 8, 100));
+        tiles[1].addComponent(ComponentType.Material, new LambertMaterial({ color: 0x242628 }));
+        tiles[1].position(5, 0, 15);
+
+        tiles[4].addComponent(ComponentType.Geometry, new Cube(8, 9, .5));
+        tiles[4].addComponent(ComponentType.Material, new LambertMaterial({ color: 0x242628 }));
+        tiles[4].position(0, 0, 5);
+
+        tiles[2].addComponent(ComponentType.Geometry, new Cube(2, 3, 2));
+        tiles[2].addComponent(ComponentType.Material, new LambertMaterial({ color: 0x242628 }));
+        tiles[2].position(-3, 0, 15);
+
+        tiles[3].addComponent(ComponentType.Geometry, new Cube(2, 1, 2));
+        tiles[3].addComponent(ComponentType.Material, new LambertMaterial({ color: 0x242628 }));
+        tiles[3].position(0, 3, 10);
+
+        for (let i = 0; i < tiles.length; i++) {
+            scene.add('.tile', tiles[i]);
+        }
+
+        floor.addComponent(ComponentType.Geometry, new Cube(70, .3, 70));
         floor.addComponent(ComponentType.Material, new LambertMaterial({ color: 0x4a4e54 }));
 
         player.addComponent(ComponentType.Geometry, new Cube(1, 1.5, 1));
@@ -53,22 +84,10 @@ export default class Sandbox {
         let renderer = new Renderer('game', width, height);
 
         scene.WebGLScene.add(player.getRenderObject());
-        player.position(0, 5, 20);
+        player.position(0, 1, 20);
         floor.position(0, 0, 0);
 
         player.CollisionDetectionActive = true;
-
-        for (let i = 0; i < 15; i++) {
-            for (let j = 0; j < 40; j++) {
-                let cube = new GameObject();
-                cube.position(i * 1.2 - 8, 2,  j * 1.2 - 5);
-                cube.addComponent(ComponentType.Geometry, new Cube(1, 1.5, 1));
-                cube.addComponent(ComponentType.Material, new LambertMaterial({ color: 0x0b1c72 }));
-                cube.addComponent(ComponentType.Physics, new Rigidbody());
-                cube.CollisionDetectionActive = true;
-                scene.add('.cube', cube);
-            }
-        }
 
         scene.compile();
 
@@ -96,10 +115,14 @@ export default class Sandbox {
             scene.update();
             if (inputs.player(0) !== undefined) {
                 if (Math.abs(inputs.player(0).LeftAxis.X) > .2) {
-                    player.move(inputs.player(0).LeftAxis.X / 10, 0, 0);   
+                    player.VelX = inputs.player(0).LeftAxis.X / 10;
+                } else {
+                    player.VelX = 0;
                 }
                 if (Math.abs(inputs.player(0).LeftAxis.Y) > .2) {
-                    player.move(0, 0, inputs.player(0).LeftAxis.Y / 10);
+                    player.VelZ = inputs.player(0).LeftAxis.Y / 10;
+                } else {
+                    player.VelZ = 0;
                 }
 
                 if (inputs.player(0).A.pressed) {

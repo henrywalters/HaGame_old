@@ -62,4 +62,6 @@ export default interface IGameObject {
     update(): void;
     detectCollisions(gameObjects: Array<IGameObject>): void;
 
+    ComputeNextBoundBox(): Three.Box3;
+
 }

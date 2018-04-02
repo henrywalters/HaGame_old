@@ -14,7 +14,7 @@ export default class Rigidbody implements IPhysics {
     GameObject: IGameObject | null;
     GameObjectSet: boolean;
 
-    Gravity: number = .001;
+    Gravity: number = .0025;
     Mass: number = 1;
     HasDrag: boolean = true;
     DragCoef: number = 1;
@@ -38,11 +38,8 @@ export default class Rigidbody implements IPhysics {
 
     applyPhysics(): void {
         let g = this.gameObject();
-        if (!g.CollidingDirection.down) {
-            g.VelY -= this.Gravity;
-        } else {
-            g.VelY = 0;
-        }
+        g.VelY -= this.Gravity;
+        
     }
 
     setBody(gameObject: IGameObject): void {
