@@ -31,9 +31,9 @@ export default class CollisionDetector {
                     if (
                         gameObjects[i].BoundBox.containsPoint(
                             new Three.Vector3(
-                                vertices[j].x + gameObject.X + gameObject.VelX,
-                                vertices[j].y + gameObject.Y + gameObject.VelY,
-                                vertices[j].z + gameObject.Z + gameObject.VelZ
+                                vertices[j].x + gameObject.VelX,
+                                vertices[j].y + gameObject.VelY,
+                                vertices[j].z + gameObject.VelZ
                             )
                         ) 
                         && 
