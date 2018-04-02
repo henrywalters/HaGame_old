@@ -279,6 +279,7 @@ export default class GameObject implements IGameObject {
             this.RenderObject.position.set(this.X, this.Y, this.Z);
             this.RenderObject.scale.set(this.ScaleX, this.ScaleY, this.ScaleZ);
             this.RenderObject.rotation.set(this.Roll, this.Pitch, this.Yaw);
+            this.computeBoundBox();
             /*this.RenderObject.scale.x = this.ScaleX;
             this.RenderObject.scale.y = this.ScaleY;
             this.RenderObject.scale.z = this.ScaleZ;
